@@ -1,0 +1,30 @@
+{
+  "name": "react-to-vue",
+  "version": "1.0.0",
+  "description": "engine that transforms React component to Vue component",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "npm run start",
+    "start": "babel ./src/ -d ./lib/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/vicwang163/react-to-vue.git"
+  },
+  "keywords": [
+    "react",
+    "vue",
+    "transformation"
+  ],
+  "author": "vic.wang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vicwang163/react-to-vue/issues"
+  },
+  "homepage": "https://github.com/vicwang163/react-to-vue#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "presets": [["env", {
+      "targets": {
+        "node": "6.3.0"
+      },
+      "modules": "commonjs",
+      "loose": true,
+      "debug": true
+    }]]
+}
