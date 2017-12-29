@@ -6,6 +6,7 @@
   "scripts": {
     "prepublish": "npm run start",
     "start": "babel ./src/ -d ./lib/",
+    "dev": "babel ./src/ -d ./lib/ -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -26,5 +27,9 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1"
+  },
+  "dependencies": {
+    "babel-traverse": "^6.26.0",
+    "babylon": "^6.18.0"
   }
 }
