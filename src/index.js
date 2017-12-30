@@ -16,7 +16,9 @@ module.exports = function transform (src) {
   let result = {
     "import": [],
     "export": [],
-    "class": {}
+    "class": {},
+    // there exists incompatibility
+    "caveats": []
   }
   babelTraverse(ast, {
     Program (path) {
@@ -25,10 +27,13 @@ module.exports = function transform (src) {
         let node = nodeLists[i]
         // get prop-types
         if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
-          debugger
           let rt = getProps(node.expression)
           if (rt) {
             result['class'][rt.type] = rt.value
+            // record invalid proptypes
+            if (rt.caveats && rt.caveats.length) {
+              result.caveats.push(`invalid propTypes: ${rt.class}:[${rt.caveats.join(',')}]`)
+            }
           }
         }
       }
@@ -53,5 +58,6 @@ module.exports = function transform (src) {
     ExportDefaultDeclaration () {
     }
   })
+  debugger
   console.log(result)
 }
