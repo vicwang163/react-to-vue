@@ -48,13 +48,6 @@ module.exports = function transform (src) {
     },
     ClassDeclaration (path) {
     },
-    ExpressionStatement (path) {
-      let node = path.node
-      if (path.parentPath.type !== 'Program') {
-        return
-      }
-      // debugger
-    },
     ExportDefaultDeclaration () {
     }
   })
