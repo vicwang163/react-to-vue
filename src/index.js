@@ -1,5 +1,6 @@
 var fs = require('fs')
 var getProps = require('./props')
+var getClass = require('./class')
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 
@@ -47,10 +48,12 @@ module.exports = function transform (src) {
       result.import.push(fileContent.slice(node.start, node.end))
     },
     ClassDeclaration (path) {
+      result.class.className = path.node.id.name
+      let rt = getClass(path, fileContent)
+      Object.assign(result.class, rt)
     },
     ExportDefaultDeclaration () {
     }
   })
-  debugger
   console.log(result)
 }
