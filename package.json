@@ -29,7 +29,9 @@
     "babel-preset-env": "^1.6.1"
   },
   "dependencies": {
+    "babel-generator": "^6.26.0",
     "babel-traverse": "^6.26.0",
-    "babylon": "^6.18.0"
+    "babylon": "^6.18.0",
+    "js-beautify": "^1.7.5"
   }
 }
