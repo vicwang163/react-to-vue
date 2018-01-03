@@ -15,7 +15,7 @@ function transformSetstate (node, fileContent) {
     if (args[0].type === 'ObjectExpression') {
       statement.push(`Object.assign(this, ${str})`)
     } else {
-      str = '(' + str + ')()'
+      str = '(' + str + ')(this, this)'
       statement.push(`Object.assign(this, ${str})`)
     }
   }
@@ -94,6 +94,7 @@ function parseLifeCycle (path, method, fileContent, result) {
   })
   // debugger
   let code = generateMethod(path.node.body)
+  console.log(code)
   result[method] = code
 }
 
@@ -121,6 +122,10 @@ module.exports = function getClass (path, fileContent) {
           break;
         case 'componentWillUnmount':
           parseLifeCycle(path, 'destroyed', fileContent, result);
+          break;
+        case 'componentDidCatch':
+          debugger
+          parseLifeCycle(path, 'errorCaptured', fileContent, result);
           break;
       }
     }
