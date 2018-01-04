@@ -45,7 +45,7 @@ function generateMethod (node) {
   })
   rt = generate(tempAst, {})
   rt = beautify(rt.code)
-  return rt.replace(/^{|}$/g, '')
+  return rt
 }
 
 // parse constructor
@@ -94,13 +94,48 @@ function parseLifeCycle (path, method, fileContent, result) {
   })
   // debugger
   let code = generateMethod(path.node.body)
-  console.log(code)
-  result[method] = code
+  result[method] = `${method} () ${code}`
+}
+
+// parse events
+function parseMethods (path, fileContent, result) {
+  path.traverse({
+    ExpressionStatement(expressPath) {
+      let node = expressPath.node;
+      if (!node.start) {
+        return;
+      }
+      let sectionCon = fileContent.slice(node.start, node.end);
+      let statement = "";
+      if (/^this\.setState/.test(sectionCon)) {
+        // transform setState
+        statement = transformSetstate(node, fileContent);
+      }
+      if (statement) {
+        expressPath.replaceWithSourceString(statement);
+      }
+    }
+  });
+  let code = generateMethod(path.node.body);
+  let method = path.node.key.name
+  let params = path.node.params
+  let paramsArr = []
+  for (let i = 0; i < params.length; i++) {
+    paramsArr.push(fileContent.slice(params[i].start, params[i].end))
+  }
+  code = `${method} (${paramsArr.join(', ')}) ${code}`
+  result.methods.push(code)
+}
+
+// parse render
+function parseRender (path, fileContent, result) {
+  
 }
 
 module.exports = function getClass (path, fileContent) {
   let result = {
-    data: {}
+    data: {},
+    methods: []
   }
   path.traverse({
     ClassMethod (path) {
@@ -124,8 +159,16 @@ module.exports = function getClass (path, fileContent) {
           parseLifeCycle(path, 'destroyed', fileContent, result);
           break;
         case 'componentDidCatch':
-          debugger
           parseLifeCycle(path, 'errorCaptured', fileContent, result);
+          break;
+        case 'shouldComponentUpdate':
+        case 'componentWillReceiveProps':
+          break;
+        case 'render':
+          parseRender(path, fileContent, result);
+          break;
+        default:
+          parseMethods(path, fileContent, result);
           break;
       }
     }
