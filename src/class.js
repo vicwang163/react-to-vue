@@ -94,7 +94,7 @@ function parseLifeCycle (path, method, fileContent, result) {
   })
   // debugger
   let code = generateMethod(path.node.body)
-  result[method] = `${method} () ${code}`
+  result.lifeCycles.push(`${method} () ${code}`)
 }
 
 // parse events
@@ -137,7 +137,8 @@ function parseRender (path, fileContent, result) {
 module.exports = function getClass (path, fileContent) {
   let result = {
     data: {},
-    methods: []
+    methods: [],
+    lifeCycles: []
   }
   path.traverse({
     ClassMethod (path) {

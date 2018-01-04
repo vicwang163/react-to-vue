@@ -28,12 +28,12 @@ module.exports = function (node) {
           // case: propTypes.string.isRequired
           if (value === 'isRequired') {
             result.value[property.key.name] = {
-              value: property.value.object.property.name,
+              type: validTypes[property.value.object.property.name],
               required: true
             }
           } else {
             result.value[property.key.name] = {
-              value: validTypes[value]
+              type: validTypes[value]
             }
           }
         } else {

@@ -1,6 +1,8 @@
 var fs = require('fs')
+var path = require('path')
 var getProps = require('./props')
 var getClass = require('./class')
+var generateVueComponent = require('./generate')
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 
@@ -16,7 +18,6 @@ module.exports = function transform (src) {
   // traverse module
   let result = {
     "import": [],
-    "export": [],
     "class": {},
     // there exists incompatibility
     "caveats": []
@@ -24,6 +25,7 @@ module.exports = function transform (src) {
   babelTraverse(ast, {
     Program (path) {
       let nodeLists = path.node.body
+      let classDefineCount = 0
       for (let i = 0; i < nodeLists.length; i++) {
         let node = nodeLists[i]
         // get prop-types
@@ -35,6 +37,12 @@ module.exports = function transform (src) {
             if (rt.caveats && rt.caveats.length) {
               result.caveats.push(`invalid propTypes: ${rt.class}:[${rt.caveats.join(',')}]`)
             }
+          }
+        } else if (node.type === 'ClassDeclaration') {
+          classDefineCount ++
+          if (classDefineCount > 1) {
+            console.error('One file should have only one class declaration!')
+            process.exit()
           }
         }
       }
@@ -51,9 +59,11 @@ module.exports = function transform (src) {
       result.class.className = path.node.id.name
       let rt = getClass(path, fileContent)
       Object.assign(result.class, rt)
-    },
-    ExportDefaultDeclaration () {
     }
   })
-  console.log(result)
+  // generate vue component according to object
+  result = generateVueComponent(result)
+  // save file
+  let dst = path.join(path.dirname(src), 'vue:' + path.basename(src))
+  fs.writeFileSync(dst, result)
 }
