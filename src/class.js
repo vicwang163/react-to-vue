@@ -1,4 +1,3 @@
-var beautify = require('js-beautify').js_beautify
 var generate = require('babel-generator').default
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
@@ -44,7 +43,7 @@ function generateMethod (node) {
     }
   })
   rt = generate(tempAst, {})
-  rt = beautify(rt.code)
+  rt = rt.code
   return rt
 }
 

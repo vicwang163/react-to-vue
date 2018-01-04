@@ -1,4 +1,4 @@
-var beautify = require('js-beautify').js_beautify
+var prettier = require("prettier");
 
 module.exports = function generateVueComponent (object) {
   let content = ''
@@ -62,6 +62,6 @@ module.exports = function generateVueComponent (object) {
     // generate body
     content += vueProps.join(',\n') + '}'
   }
-  content = beautify(content, {brace_style: 'preserve-inline'})
+  content = prettier.format(content)
   return content
 }

@@ -32,6 +32,6 @@
     "babel-generator": "^6.26.0",
     "babel-traverse": "^6.26.0",
     "babylon": "^6.18.0",
-    "js-beautify": "^1.7.5"
+    "prettier": "^1.9.2"
   }
 }
