@@ -129,7 +129,9 @@ function parseMethods (path, fileContent, result) {
 
 // parse render
 function parseRender (path, fileContent, result) {
-  
+  let con = fileContent.slice(path.node.start, path.node.end)
+  con = con.replace(/this\.state/g, 'this').replace(/this\.props/g, 'this')
+  result.render = con
 }
 
 module.exports = function getClass (path, fileContent) {
