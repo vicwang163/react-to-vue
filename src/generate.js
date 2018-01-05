@@ -1,4 +1,4 @@
-var prettier = require("prettier");
+var format = require("prettier-eslint");
 var babelTraverse = require('babel-traverse').default
 
 module.exports = function generateVueComponent (object) {
@@ -64,23 +64,34 @@ module.exports = function generateVueComponent (object) {
     content += vueProps.join(',\n') + '}'
   }
   // use prettier beautify code
-  content = prettier.format(content, {
-    semi: false,
-    bracketSpacing: false,
-    parser(text, { babylon }) {
-      const ast = babylon(text);
-      babelTraverse(ast, {
-        Method (path) {
-          path.node.key.name += ' '
-        },
-        FunctionExpression (path) {
-          if (!path.node.id) {
-            path.node.id = " "
-          }
-        }
-      })
-      return ast;
+  // content = prettier.format(content, {
+  //   semi: false,
+  //   bracketSpacing: false,
+  //   parser(text, { babylon }) {
+  //     const ast = babylon(text);
+  //     babelTraverse(ast, {
+  //       Method (path) {
+  //         path.node.key.name += ' '
+  //       },
+  //       FunctionExpression (path) {
+  //         if (!path.node.id) {
+  //           path.node.id = " "
+  //         }
+  //       }
+  //     })
+  //     return ast;
+  //   }
+  // })
+  const options = {
+    text: content,
+    eslintConfig: {
+      parser: 'babel-eslint',
+      rules: {
+        semi: ["error", "never"],
+        "space-before-function-paren": ["error", "always"]
+      }
     }
-  })
+  };
+  content = format(options);
   return content
 }
