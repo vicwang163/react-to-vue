@@ -3,6 +3,23 @@ var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 
 /*
+* transform source string to ast nodes
+*/
+function transformSourceString (statement) {
+  if (!Array.isArray(statement)) {
+    statement = [statement]
+  }
+  let result = []
+  for (let i = 0; i < statement.length; i++) {
+    let replacement = "(" + statement[i] + ")"
+    replacement = babylon.parse(replacement)
+    replacement = replacement.program.body[0].expression
+    result.push(babelTraverse.removeProperties(replacement))
+  }
+  return result
+}
+
+/*
 * transform setState function
 */
 function transformSetstate (node, fileContent) {
@@ -23,7 +40,9 @@ function transformSetstate (node, fileContent) {
     let callback = fileContent.slice(args[1].start, args[1].end)
     statement.push(`this.$nextTick(${callback})`)
   }
-  return statement.join(',')
+  // transform source string to nodes
+  statement = transformSourceString(statement)
+  return statement
 }
 
 /*
@@ -86,8 +105,8 @@ function parseLifeCycle (path, method, fileContent, result) {
         // transform setState
         statement = transformSetstate(node, fileContent)
       }
-      if (statement) {
-        expressPath.replaceWithSourceString(statement)
+      if (statement.length) {
+        expressPath.replaceWithMultiple(statement)
       }
     }
   })
@@ -110,8 +129,8 @@ function parseMethods (path, fileContent, result) {
         // transform setState
         statement = transformSetstate(node, fileContent);
       }
-      if (statement) {
-        expressPath.replaceWithSourceString(statement);
+      if (statement.length) {
+        expressPath.replaceWithMultiple(statement)
       }
     }
   });
