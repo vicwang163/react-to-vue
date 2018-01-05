@@ -1,4 +1,5 @@
 var prettier = require("prettier");
+var babelTraverse = require('babel-traverse').default
 
 module.exports = function generateVueComponent (object) {
   let content = ''
@@ -62,6 +63,24 @@ module.exports = function generateVueComponent (object) {
     // generate body
     content += vueProps.join(',\n') + '}'
   }
-  content = prettier.format(content)
+  // use prettier beautify code
+  content = prettier.format(content, {
+    semi: false,
+    bracketSpacing: false,
+    parser(text, { babylon }) {
+      const ast = babylon(text);
+      babelTraverse(ast, {
+        Method (path) {
+          path.node.key.name += ' '
+        },
+        FunctionExpression (path) {
+          if (!path.node.id) {
+            path.node.id = " "
+          }
+        }
+      })
+      return ast;
+    }
+  })
   return content
 }
