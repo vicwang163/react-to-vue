@@ -29,7 +29,9 @@ function transformSetstate (node, fileContent) {
   if (args[0]) {
     str = fileContent.slice(args[0].start, args[0].end)
     if (args[0].type === 'ObjectExpression') {
-      statement.push(`Object.assign(this, ${str})`)
+      args[0].properties.map(function (property) {
+        statement.push(`this.${property.key.name} = ${fileContent.slice(property.value.start, property.value.end)}`)
+      })
     } else {
       str = '(' + str + ')(this, this)'
       statement.push(`Object.assign(this, ${str})`)
