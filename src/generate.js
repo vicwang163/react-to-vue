@@ -56,6 +56,31 @@ module.exports = function generateVueComponent (object) {
       vueProps.push(`${body.lifeCycles.join(',')}`)
     }
     
+    // add sub components
+    if (body.components) {
+      let result = []
+      // validate components
+      body.components.forEach(function (com) {
+        let exist = object.import.some(function (value) {
+          return value.includes(com)
+        })
+        if (exist) {
+          result.push(com)
+        }
+      })
+      // if exists necessary components
+      if (result.length) {
+        vueProps.push(`components: {${result.join(',')}}`)
+        // replace sub components according to Vue rules
+        result.forEach(function (value) {
+          let reg = new RegExp(`<${value}`, 'g')
+          body.render = body.render.replace(reg, function (r) {
+            return r.replace(/^<[A-Z]/, v => v.toLowerCase()).replace(/[A-Z]/g, v => '-' + v.toLowerCase())
+          })
+        })
+      }
+    }
+    
     // add render
     if (body.render) {
       vueProps.push(`${body.render}`)
@@ -63,25 +88,7 @@ module.exports = function generateVueComponent (object) {
     // generate body
     content += vueProps.join(',\n') + '}'
   }
-  // use prettier beautify code
-  // content = prettier.format(content, {
-  //   semi: false,
-  //   bracketSpacing: false,
-  //   parser(text, { babylon }) {
-  //     const ast = babylon(text);
-  //     babelTraverse(ast, {
-  //       Method (path) {
-  //         path.node.key.name += ' '
-  //       },
-  //       FunctionExpression (path) {
-  //         if (!path.node.id) {
-  //           path.node.id = " "
-  //         }
-  //       }
-  //     })
-  //     return ast;
-  //   }
-  // })
+  // format content
   const options = {
     text: content,
     eslintConfig: {

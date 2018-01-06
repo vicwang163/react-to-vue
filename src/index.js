@@ -57,13 +57,16 @@ module.exports = function transform (src) {
     },
     ClassDeclaration (path) {
       result.class.className = path.node.id.name
-      let rt = getClass(path, fileContent)
-      Object.assign(result.class, rt)
+      getClass(path, fileContent, result)
     }
   })
   // generate vue component according to object
-  result = generateVueComponent(result)
+  let output = generateVueComponent(result)
   // save file
   let dst = path.join(path.dirname(src), 'vue:' + path.basename(src))
-  fs.writeFileSync(dst, result)
+  fs.writeFileSync(dst, output)
+  // output caveats
+  if (result.caveats.length) {
+    console.log("Caveats:\n", result.caveats.join('\n'))
+  }
 }

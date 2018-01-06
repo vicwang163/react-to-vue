@@ -69,7 +69,7 @@ function generateMethod (node) {
 }
 
 // parse constructor
-function parseConstructor (path, fileContent, result) {
+function parseConstructor (path, fileContent, result, caveats) {
   path.traverse({
     ExpressionStatement (expressPath) {
       let node = expressPath.node
@@ -85,7 +85,12 @@ function parseConstructor (path, fileContent, result) {
             for (let i = 0; i < properties.length; i++) {
               let property = properties[i]
               let value = fileContent.slice(property.value.start, property.value.end)
-              result.data[property.key.name] = value.replace(/this\.props/g, 'this').replace(/props/g, 'this')
+              // validate if it exists in the props
+              if (result.propTypes[property.key.name]) {
+                caveats.push(`The data property "${property.key.name}" is already declared as a prop`)
+              } else {
+                result.data[property.key.name] = value.replace(/this\.props/g, 'this').replace(/props/g, 'this')
+              }
             }
           }
         })
@@ -152,19 +157,31 @@ function parseRender (path, fileContent, result) {
   let con = fileContent.slice(path.node.start, path.node.end)
   con = con.replace(/this\.state/g, 'this').replace(/this\.props/g, 'this')
   result.render = con
+  // find sub component
+  path.traverse({
+    JSXElement (jsxPath) {
+      let element = jsxPath.node.openingElement
+      if (element.name && element.name.name && /^[A-Z]/.test(element.name.name)) {
+        result.components.push(element.name.name)
+      }
+    }
+  })
 }
 
-module.exports = function getClass (path, fileContent) {
-  let result = {
+module.exports = function getClass (path, fileContent, root) {
+  Object.assign(root.class, {
     data: {},
     methods: [],
-    lifeCycles: []
-  }
+    lifeCycles: [],
+    components: []
+  })
+  let result = root.class
+  
   path.traverse({
     ClassMethod (path) {
       switch(path.node.key.name) {
         case 'constructor':
-          parseConstructor(path, fileContent, result);
+          parseConstructor(path, fileContent, result, root.caveats);
           break;
         case 'componentWillMount':
           parseLifeCycle(path, 'beforeMount', fileContent, result);
