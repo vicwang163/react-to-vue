@@ -88,6 +88,7 @@ module.exports = function generateVueComponent (object) {
       parser: 'babel-eslint',
       rules: {
         semi: ["error", "never"],
+        quotes: ["error", "single"],
         "space-before-function-paren": ["error", "always"]
       }
     }
