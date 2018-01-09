@@ -9,6 +9,9 @@
     "dev": "babel ./src/ -d ./lib/ -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "rtv": "bin/rtv"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/vicwang163/react-to-vue.git"
@@ -33,6 +36,7 @@
     "babel-generator": "^6.26.0",
     "babel-traverse": "^6.26.0",
     "babylon": "^6.18.0",
+    "command": "^0.0.5",
     "prettier-eslint": "^8.7.0"
   }
 }
