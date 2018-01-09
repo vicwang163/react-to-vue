@@ -36,7 +36,7 @@ module.exports = function generateVueComponent (object) {
       vueProps.push(`props: {${propArr.join(',\n')}}`)
     }
     // add data
-    if (body.data) {
+    if (body.data && Object.keys(body.data).length) {
       let data = body.data
       let arr = []
       for (let key in data) {
