@@ -96,6 +96,7 @@ module.exports = function generateVueComponent (object) {
       rules: {
         semi: ["error", "never"],
         quotes: ["error", "single"],
+        "object-curly-spacing": ["error", "never"],
         "space-before-function-paren": ["error", "always"]
       }
     }
