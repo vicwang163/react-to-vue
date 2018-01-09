@@ -17,6 +17,7 @@ program.usage('[options] file(react component)')
 // options
 // ----------------------------------------
 program
+  .option('-O --output [string]', 'The output file name')
   .parse(process.argv)
 
 
@@ -24,6 +25,6 @@ if(!program.args.length){
   program.help()
 } else {
   let filepath = program.args[0]
-  filepath = path.resolve(__dirname, filepath)
-  transform(filepath)
+  filepath = path.resolve(process.cwd(), filepath)
+  transform(filepath, program.output)
 }

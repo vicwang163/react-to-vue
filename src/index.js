@@ -2,11 +2,12 @@ var fs = require('fs')
 var path = require('path')
 var getProps = require('./props')
 var getClass = require('./class')
+var saveComponent = require('./save')
 var generateVueComponent = require('./generate')
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 
-module.exports = function transform (src) {
+module.exports = function transform (src, dst) {
   // read file
   let fileContent = fs.readFileSync(src)
   fileContent = fileContent.toString()
@@ -62,9 +63,10 @@ module.exports = function transform (src) {
   })
   // generate vue component according to object
   let output = generateVueComponent(result)
+  
   // save file
-  let dst = path.join(path.dirname(src), 'vue:' + path.basename(src))
-  fs.writeFileSync(dst, output)
+  saveComponent(dst, output)
+  
   // output caveats
   if (result.caveats.length) {
     console.log("Caveats:\n", result.caveats.join('\n'))
