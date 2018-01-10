@@ -68,6 +68,37 @@ function generateMethod (node) {
   return rt
 }
 
+/*
+* replace setState,ref and etc
+*/
+function replaceSpecialStatement (path, fileContent) {
+  path.traverse({
+    ExpressionStatement(expressPath) {
+      let node = expressPath.node;
+      if (!node.start) {
+        return;
+      }
+      let sectionCon = fileContent.slice(node.start, node.end);
+      let statement = "";
+      if (/^this\.setState/.test(sectionCon)) {
+        // transform setState
+        statement = transformSetstate(node, fileContent);
+      }
+      if (statement.length) {
+        expressPath.replaceWithMultiple(statement);
+      }
+    },
+    MemberExpression (memPath) {
+      let node = memPath.node
+      if (node.property.name === 'refs') {
+        if (node.object.type === 'ThisExpression') {
+          node.property.name = '$refs'
+        }
+      }
+    }
+  });  
+}
+
 // parse constructor
 function parseConstructor (path, fileContent, result, caveats) {
   path.traverse({
@@ -100,23 +131,8 @@ function parseConstructor (path, fileContent, result, caveats) {
 }
 // parse life cycle methods
 function parseLifeCycle (path, method, fileContent, result) {
-  path.traverse({
-    ExpressionStatement (expressPath) {
-      let node = expressPath.node
-      if (!node.start) {
-        return
-      }
-      let sectionCon = fileContent.slice(node.start, node.end)
-      let statement = ""
-      if (/^this\.setState/.test(sectionCon)) {
-        // transform setState
-        statement = transformSetstate(node, fileContent)
-      }
-      if (statement.length) {
-        expressPath.replaceWithMultiple(statement)
-      }
-    }
-  })
+  // replace special statement
+  replaceSpecialStatement(path, fileContent)
   // debugger
   let code = generateMethod(path.node.body)
   result.lifeCycles.push(`${method} () ${code}`)
@@ -124,23 +140,9 @@ function parseLifeCycle (path, method, fileContent, result) {
 
 // parse events
 function parseMethods (path, fileContent, result) {
-  path.traverse({
-    ExpressionStatement(expressPath) {
-      let node = expressPath.node;
-      if (!node.start) {
-        return;
-      }
-      let sectionCon = fileContent.slice(node.start, node.end);
-      let statement = "";
-      if (/^this\.setState/.test(sectionCon)) {
-        // transform setState
-        statement = transformSetstate(node, fileContent);
-      }
-      if (statement.length) {
-        expressPath.replaceWithMultiple(statement)
-      }
-    }
-  });
+  // replace special statement
+  replaceSpecialStatement(path, fileContent)
+  // generate method
   let code = generateMethod(path.node.body);
   let method = path.node.key.name
   let params = path.node.params
