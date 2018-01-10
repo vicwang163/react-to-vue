@@ -100,6 +100,8 @@ module.exports = function generateVueComponent (object) {
       rules: {
         semi: ["error", "never"],
         quotes: ["error", "single"],
+        "no-extra-semi": 2,
+        "max-len": ["error", { "code": 150 }],
         "object-curly-spacing": ["error", "never"],
         "space-before-function-paren": ["error", "always"]
       }
