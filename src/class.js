@@ -1,6 +1,9 @@
 var generate = require('babel-generator').default
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
+var babelTypes = require('babel-types')
+// autumatically increate index 
+var refIndex = 0
 
 /*
 * transform source string to ast nodes
@@ -135,7 +138,8 @@ function parseLifeCycle (path, method, fileContent, result) {
   replaceSpecialStatement(path, fileContent)
   // debugger
   let code = generateMethod(path.node.body)
-  result.lifeCycles.push(`${method} () ${code}`)
+  // here we remove the brace, so that we could add extra code in the lifecycle method
+  result.lifeCycles[method] = code.replace(/^{|}$/g, '')
 }
 
 // parse events
@@ -156,25 +160,53 @@ function parseMethods (path, fileContent, result) {
 
 // parse render
 function parseRender (path, fileContent, result) {
-  let con = fileContent.slice(path.node.start, path.node.end)
-  con = con.replace(/this\.state/g, 'this').replace(/this\.props/g, 'this')
-  result.render = con
-  // find sub component
+  // retrieve special properties
   path.traverse({
     JSXElement (jsxPath) {
       let element = jsxPath.node.openingElement
+      // find sub component
       if (element.name && element.name.name && /^[A-Z]/.test(element.name.name)) {
         result.components.push(element.name.name)
       }
+    },
+    JSXAttribute (attrPath) {
+      // if value of ref property is callback, we need to change it
+      if (attrPath.node.name.name === 'ref' && attrPath.node.value.type !== 'StringLiteral') {
+        let value = attrPath.node.value
+        let code = fileContent.slice(value.expression.start, value.expression.end)
+        let refValue = 'vueref' + refIndex++
+        attrPath.traverse({
+          JSXExpressionContainer (cPath) {
+            cPath.replaceWith(babelTypes.stringLiteral(refValue))
+          }
+        })
+        // add the ref callback code into specified lifecycle
+        let mountCode = `(${code})(this.$refs.${refValue})`
+        // let unmountCode = `(${code})(null)`
+        result.lifeCycles.mounted = mountCode + (result.lifeCycles.mounted ? result.lifeCycles.mounted : '')
+        result.lifeCycles.updated = mountCode + (result.lifeCycles.updated ? result.lifeCycles.updated : '')
+        // result.lifeCycles.destroyed = unmountCode + (result.lifeCycles.destroyed ? result.lifeCycles.destroyed : '')
+      }
+    },
+    MemberExpression (memPath) {
+      // change `this.state` and `this.props` to `this`
+      let node = memPath.node
+      if (['state', 'props'].includes(node.property.name)) {
+        if (node.object.type === 'ThisExpression') {
+          memPath.replaceWith(babelTypes.thisExpression())
+        }
+      }
     }
   })
+  let code = generateMethod(path.node.body);
+  result.render = `render () ${code}`
 }
 
 module.exports = function getClass (path, fileContent, root) {
   Object.assign(root.class, {
     data: {},
     methods: [],
-    lifeCycles: [],
+    lifeCycles: {},
     components: []
   })
   let result = root.class

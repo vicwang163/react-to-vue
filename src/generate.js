@@ -52,8 +52,12 @@ module.exports = function generateVueComponent (object) {
     }
     
     // add life cycles
-    if (body.lifeCycles.length) {
-      vueProps.push(`${body.lifeCycles.join(',')}`)
+    if (Object.keys(body.lifeCycles).length) {
+      let lifeCycles = []
+      for (let key in body.lifeCycles) {
+        lifeCycles.push(`${key} () {${body.lifeCycles[key]}}`)
+      }
+      vueProps.push(`${lifeCycles.join(',')}`)
     }
     
     // add sub components
