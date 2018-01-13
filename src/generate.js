@@ -8,20 +8,28 @@ module.exports = function generateVueComponent (object) {
     content += object.import.join('\n')
     content += '\n\n'
   }
-  // generate body
-  if (object.class) {
+  
+  // generate class component
+  if (object.class && object.class.render) {
     let body = object.class
     // vueProps is designed to put vue properties
     let vueProps = []
     content += 'export default {\n'
+    
+    // add component name
+    if (body.className) {
+      vueProps.push(`name: '${body.className.replace(/^[A-Z]/, v => v.toLowerCase()).replace(/[A-Z]/g, v => '-' + v.toLowerCase())}'`)
+    }
+    
     // add props
-    if (body.propTypes) {
-      let props = body.propTypes
+    if (object.propTypes && object.propTypes[body.className]) {
+      let props = object.propTypes[body.className]
+      let defaultValues = object.defaultValue && object.defaultValue[body.className]
       let propArr = []
       for (let item in props) {
         let value = props[item]
-        if (body.defaultValue && body.defaultValue[item]) {
-          value.default = body.defaultValue[item]
+        if (defaultValues && defaultValues[item]) {
+          value.default = defaultValues[item]
         }
         let arr = []
         for (let key in value) {
@@ -47,12 +55,12 @@ module.exports = function generateVueComponent (object) {
     }
     
     // add methods
-    if (body.methods.length) {
+    if (body.methods && body.methods.length) {
       vueProps.push(`methods: {${body.methods.join(',')}}`)
     }
     
     // add life cycles
-    if (Object.keys(body.lifeCycles).length) {
+    if (body.lifeCycles && Object.keys(body.lifeCycles).length) {
       let lifeCycles = []
       for (let key in body.lifeCycles) {
         lifeCycles.push(`${key} () {${body.lifeCycles[key]}}`)
@@ -92,6 +100,7 @@ module.exports = function generateVueComponent (object) {
     // generate body
     content += vueProps.join(',\n') + '}'
   }
+  
   // format content
   const options = {
     text: content,

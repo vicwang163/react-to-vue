@@ -103,7 +103,7 @@ function replaceSpecialStatement (path, fileContent) {
 }
 
 // parse constructor
-function parseConstructor (path, fileContent, result, caveats) {
+function parseConstructor (path, fileContent, result, root) {
   path.traverse({
     ExpressionStatement (expressPath) {
       let node = expressPath.node
@@ -120,8 +120,8 @@ function parseConstructor (path, fileContent, result, caveats) {
               let property = properties[i]
               let value = fileContent.slice(property.value.start, property.value.end)
               // validate if it exists in the props
-              if (result.propTypes[property.key.name]) {
-                caveats.push(`The data property "${property.key.name}" is already declared as a prop`)
+              if (root.propTypes && root.propTypes[result.className] && root.propTypes[result.className][property.key.name]) {
+                root.caveats.push(`The data property "${property.key.name}" is already declared as a prop`)
               } else {
                 result.data[property.key.name] = value.replace(/this\.props/g, 'this').replace(/props/g, 'this')
               }
@@ -215,7 +215,7 @@ module.exports = function getClass (path, fileContent, root) {
     ClassMethod (path) {
       switch(path.node.key.name) {
         case 'constructor':
-          parseConstructor(path, fileContent, result, root.caveats);
+          parseConstructor(path, fileContent, result, root);
           break;
         case 'componentWillMount':
           parseLifeCycle(path, 'beforeMount', fileContent, result);

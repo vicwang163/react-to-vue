@@ -4,8 +4,10 @@ var getProps = require('./props')
 var getClass = require('./class')
 var saveComponent = require('./save')
 var generateVueComponent = require('./generate')
+var getFunctional = require('./functional')
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
+var chalk = require('chalk')
 
 module.exports = function transform (src, dst) {
   // read file
@@ -20,6 +22,7 @@ module.exports = function transform (src, dst) {
   let result = {
     "import": [],
     "class": {},
+    "functional": [],
     // there exists incompatibility
     "caveats": []
   }
@@ -33,7 +36,10 @@ module.exports = function transform (src, dst) {
         if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
           let rt = getProps(node.expression)
           if (rt) {
-            result['class'][rt.type] = rt.value
+            if (!result[rt.type]) {
+              result[rt.type] = {}
+            }
+            result[rt.type][rt.class] = rt.value
             // record invalid proptypes
             if (rt.caveats && rt.caveats.length) {
               result.caveats.push(`invalid propTypes: ${rt.class}:[${rt.caveats.join(',')}]`)
@@ -59,6 +65,18 @@ module.exports = function transform (src, dst) {
     ClassDeclaration (path) {
       result.class.className = path.node.id.name
       getClass(path, fileContent, result)
+    },
+    FunctionDeclaration (path) {
+      if (path.parentPath.type !== 'Program') {
+        return
+      }
+      // retrieve functional component
+      getFunctional(path, fileContent, result)
+    },
+    ExportDeclaration (path) {
+      let node = path.node
+      let exportName = node.declaration.name ? node.declaration.name : node.declaration.id.name
+      result.exportName = exportName
     }
   })
   // generate vue component according to object
@@ -69,6 +87,7 @@ module.exports = function transform (src, dst) {
   
   // output caveats
   if (result.caveats.length) {
-    console.log("Caveats:\n", result.caveats.join('\n'))
+    console.log(chalk.red("Caveats:"));
+    console.log(chalk.red(result.caveats.join('\n')))
   }
 }
