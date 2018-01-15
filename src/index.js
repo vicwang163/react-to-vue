@@ -21,6 +21,7 @@ module.exports = function transform (src, dst) {
   // traverse module
   let result = {
     "import": [],
+    "declaration": [],
     "class": {},
     "functional": [],
     // there exists incompatibility
@@ -53,6 +54,8 @@ module.exports = function transform (src, dst) {
           }
         } else if (node.type === 'ExportDefaultDeclaration') {
           result.exportName = node.declaration.name ? node.declaration.name : node.declaration.id.name
+        } else if (node.type === 'VariableDeclaration') {
+          result.declaration.push(fileContent.slice(node.start, node.end))
         }
       }
       if (classDefineCount === 0) {

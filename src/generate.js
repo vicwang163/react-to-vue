@@ -18,11 +18,16 @@ function mergeExportComponent (object) {
 
 module.exports = function generateVueComponent (object) {
   let content = ''
-  // generate imports
-  if (object.import) {
-    content += object.import.join('\n')
-    content += '\n\n'
-  }
+  // add imports
+  object.import.forEach((item) => {
+    content += item + '\n'
+  })
+  
+  // add variable declaration
+  object.declaration.forEach((item) => {
+    content += item + '\n'
+  })
+  content += '\n\n'
   
   // merge export component
   let component = mergeExportComponent(object)
