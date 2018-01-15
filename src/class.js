@@ -153,6 +153,11 @@ function parseRender (path, fileContent, result) {
     MemberExpression (memPath) {
       // change `this.state` and `this.props` to `this`
       let node = memPath.node
+      // replace this.props.children with 'this.$slots.default'
+      if (node.property.name === 'children' && node.object.object.type === 'ThisExpression') {
+        node.property.name = 'default'
+        node.object.property.name = '$slots'
+      }
       if (['state', 'props'].includes(node.property.name)) {
         if (node.object.type === 'ThisExpression') {
           memPath.replaceWith(babelTypes.thisExpression())

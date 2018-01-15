@@ -14,6 +14,7 @@ module.exports = function (path, fileContent, result) {
   }
   let extraCode = ''
   let paramsPath = path.get('params.0')
+  let originalPropName = ''
   if (paramsPath.isObjectPattern()) {
     let node = paramsPath.node
     extraCode = `let ${fileContent.slice(node.start, node.end)} = c.props`
@@ -21,7 +22,9 @@ module.exports = function (path, fileContent, result) {
     let node = paramsPath.node.left
     extraCode = `let ${fileContent.slice(node.start, node.end)} = c.props`
   } else if (paramsPath.isIdentifier()) {
-    extraCode = `const ${paramsPath.node.name} = c.props`
+    // record original prop name
+    originalPropName = paramsPath.node.name
+    extraCode = `const ${originalPropName} = c.props`
   } else {
     reportIssue(`Unknow params for '${funcCom.componentName}'`)
   }
@@ -31,12 +34,18 @@ module.exports = function (path, fileContent, result) {
   path.get('body.body.0').insertBefore(astFrag)
   
   // retrieve sub component
+  debugger
   path.traverse({
     JSXElement (jsxPath) {
       let element = jsxPath.node.openingElement
       // find sub component
       if (element.name && element.name.name && /^[A-Z]/.test(element.name.name)) {
         funcCom.components.push(element.name.name)
+      }
+    },
+    MemberExpression (memPath) {
+      if (memPath.node.property.name === 'children' && memPath.node.object.name === originalPropName) {
+        memPath.node.object.name = 'c'
       }
     }
   })
