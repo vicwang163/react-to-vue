@@ -2,25 +2,9 @@ var generate = require('babel-generator').default
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 var babelTypes = require('babel-types')
+const {getFunctionBody, transformSourceString} = require('./utility')
 // autumatically increate index 
 var refIndex = 0
-
-/*
-* transform source string to ast nodes
-*/
-function transformSourceString (statement) {
-  if (!Array.isArray(statement)) {
-    statement = [statement]
-  }
-  let result = []
-  for (let i = 0; i < statement.length; i++) {
-    let replacement = "(" + statement[i] + ")"
-    replacement = babylon.parse(replacement)
-    replacement = replacement.program.body[0].expression
-    result.push(babelTraverse.removeProperties(replacement))
-  }
-  return result
-}
 
 /*
 * transform setState function
@@ -48,27 +32,6 @@ function transformSetstate (node, fileContent) {
   // transform source string to nodes
   statement = transformSourceString(statement)
   return statement
-}
-
-/*
-* generate BlockStatement
-*/
-function generateMethod (node) {
-  let tempAst = babylon.parse('{console.log(1)}')
-  let executed = false
-  let rt
-  babelTraverse(tempAst, {
-    BlockStatement (tempPath) {
-      if (executed) {
-        return
-      }
-      executed = true
-      tempPath.replaceWith(node)
-    }
-  })
-  rt = generate(tempAst, {})
-  rt = rt.code
-  return rt
 }
 
 /*
@@ -120,7 +83,7 @@ function parseConstructor (path, fileContent, result, root) {
               let property = properties[i]
               let value = fileContent.slice(property.value.start, property.value.end)
               // validate if it exists in the props
-              if (root.propTypes && root.propTypes[result.className] && root.propTypes[result.className][property.key.name]) {
+              if (root.propTypes && root.propTypes[result.componentName] && root.propTypes[result.componentName][property.key.name]) {
                 root.caveats.push(`The data property "${property.key.name}" is already declared as a prop`)
               } else {
                 result.data[property.key.name] = value.replace(/this\.props/g, 'this').replace(/props/g, 'this')
@@ -137,9 +100,8 @@ function parseLifeCycle (path, method, fileContent, result) {
   // replace special statement
   replaceSpecialStatement(path, fileContent)
   // debugger
-  let code = generateMethod(path.node.body)
-  // here we remove the brace, so that we could add extra code in the lifecycle method
-  result.lifeCycles[method] = code.replace(/^{|}$/g, '')
+  let code = getFunctionBody(path.node.body)
+  result.lifeCycles[method] = code
 }
 
 // parse events
@@ -147,14 +109,14 @@ function parseMethods (path, fileContent, result) {
   // replace special statement
   replaceSpecialStatement(path, fileContent)
   // generate method
-  let code = generateMethod(path.node.body);
+  let code = getFunctionBody(path.node.body);
   let method = path.node.key.name
   let params = path.node.params
   let paramsArr = []
   for (let i = 0; i < params.length; i++) {
     paramsArr.push(fileContent.slice(params[i].start, params[i].end))
   }
-  code = `${method} (${paramsArr.join(', ')}) ${code}`
+  code = `${method} (${paramsArr.join(', ')}) {${code}}`
   result.methods.push(code)
 }
 
@@ -198,8 +160,8 @@ function parseRender (path, fileContent, result) {
       }
     }
   })
-  let code = generateMethod(path.node.body);
-  result.render = `render () ${code}`
+  let code = getFunctionBody(path.node.body);
+  result.render = `render () {${code}}`
 }
 
 module.exports = function getClass (path, fileContent, root) {
@@ -207,7 +169,8 @@ module.exports = function getClass (path, fileContent, root) {
     data: {},
     methods: [],
     lifeCycles: {},
-    components: []
+    components: [],
+    componentName: path.node.id.name
   })
   let result = root.class
   

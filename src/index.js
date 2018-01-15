@@ -51,7 +51,12 @@ module.exports = function transform (src, dst) {
             console.error('One file should have only one class declaration!')
             process.exit()
           }
+        } else if (node.type === 'ExportDefaultDeclaration') {
+          result.exportName = node.declaration.name ? node.declaration.name : node.declaration.id.name
         }
+      }
+      if (classDefineCount === 0) {
+        result.class = null
       }
     },
     ImportDeclaration (path) {
@@ -63,7 +68,6 @@ module.exports = function transform (src, dst) {
       result.import.push(fileContent.slice(node.start, node.end))
     },
     ClassDeclaration (path) {
-      result.class.className = path.node.id.name
       getClass(path, fileContent, result)
     },
     FunctionDeclaration (path) {
@@ -72,11 +76,6 @@ module.exports = function transform (src, dst) {
       }
       // retrieve functional component
       getFunctional(path, fileContent, result)
-    },
-    ExportDeclaration (path) {
-      let node = path.node
-      let exportName = node.declaration.name ? node.declaration.name : node.declaration.id.name
-      result.exportName = exportName
     }
   })
   // generate vue component according to object
