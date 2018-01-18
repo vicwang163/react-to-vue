@@ -24,6 +24,8 @@ module.exports = function transform (src, dst) {
     "declaration": [],
     "class": {},
     "functional": [],
+    "propTypes": {},
+    "defaultValue": {},
     // there exists incompatibility
     "caveats": []
   }
@@ -35,17 +37,7 @@ module.exports = function transform (src, dst) {
         let node = nodeLists[i]
         // get prop-types
         if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
-          let rt = getProps(node.expression)
-          if (rt) {
-            if (!result[rt.type]) {
-              result[rt.type] = {}
-            }
-            result[rt.type][rt.class] = rt.value
-            // record invalid proptypes
-            if (rt.caveats && rt.caveats.length) {
-              result.caveats.push(`invalid propTypes: ${rt.class}:[${rt.caveats.join(',')}]`)
-            }
-          }
+          getProps(node.expression, result)
         } else if (node.type === 'ClassDeclaration') {
           classDefineCount ++
           if (classDefineCount > 1) {
