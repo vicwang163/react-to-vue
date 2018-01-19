@@ -90,7 +90,7 @@ function parseConstructor (path, fileContent, result, root) {
               let value = fileContent.slice(property.value.start, property.value.end)
               // validate if it exists in the props
               if (root.propTypes && root.propTypes[result.componentName] && root.propTypes[result.componentName][property.key.name]) {
-                root.caveats.push(`The data property "${property.key.name}" is already declared as a prop`)
+                root.caveats.push(`The data property "${property.key.name}" is already declared as a prop, please redesign this component`)
               } else {
                 result.data[property.key.name] = value.replace(/this\.props/g, 'this').replace(/props/g, 'this')
               }

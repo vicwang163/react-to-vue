@@ -39,7 +39,7 @@ module.exports = function (node, root) {
           // if it's not the specific types, default use `Object` type
           result[property.key.name] = {type: 'Object'}
           // add this proptype into caveats
-          root.caveats.push(`invalid propTypes: '${className}:${property.key.name}'`)
+          root.caveats.push(`Inconsistent propTypes: '${className}:${property.key.name}'`)
         }
       }
     } else if (node.left.property.name === 'defaultValue') {
