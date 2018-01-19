@@ -61,6 +61,12 @@ function replaceSpecialStatement (path, fileContent) {
           node.property.name = '$refs'
         }
       }
+      // replace `this.state.xx` with `this.xx`
+      if (['state', 'props'].includes(node.property.name)) {
+        if (node.object.type === 'ThisExpression') {
+          memPath.replaceWith(babelTypes.thisExpression())
+        }
+      }
     }
   });  
 }
