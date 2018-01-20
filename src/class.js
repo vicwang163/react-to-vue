@@ -73,11 +73,13 @@ function replaceSpecialStatement (path, fileContent) {
 
 // parse constructor
 function parseConstructor (path, fileContent, result, root) {
+  let paramName = path.get('params.0') ? path.get('params.0').node.name : null
   path.traverse({
     ExpressionStatement (expressPath) {
       let node = expressPath.node
       let sectionCon = fileContent.slice(node.start, node.end)
       if (/^super|\.bind\(this\)/.test(sectionCon)) {
+        expressPath.remove()
         return
       }
       // retrieve variables
@@ -97,9 +99,22 @@ function parseConstructor (path, fileContent, result, root) {
             }
           }
         })
+        expressPath.remove()
+      }
+    },
+    MemberExpression (memPath) {
+      // replace this.props.xx or props.xx
+      let node = memPath.node
+      if (babelTypes.isThisExpression(node.object) && ['state', 'props'].includes(node.property.name)) {
+        memPath.replaceWith(babelTypes.thisExpression())
+      } else if (paramName && node.object.name === paramName) {
+        node.object.name = 'this'
       }
     }
   })
+  // put this code into `created` lifecycle
+  let code = getFunctionBody(path.node.body)
+  result.lifeCycles['created'] = code
 }
 // parse life cycle methods
 function parseLifeCycle (path, method, fileContent, result) {

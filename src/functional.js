@@ -34,7 +34,6 @@ module.exports = function (path, fileContent, result) {
   path.get('body.body.0').insertBefore(astFrag)
   
   // retrieve sub component
-  debugger
   path.traverse({
     JSXElement (jsxPath) {
       let element = jsxPath.node.openingElement
