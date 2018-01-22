@@ -153,9 +153,10 @@ function parseRender (path, fileContent, result) {
       }
     },
     JSXAttribute (attrPath) {
+      let node = attrPath.node
       // if value of ref property is callback, we need to change it
-      if (attrPath.node.name.name === 'ref' && attrPath.node.value.type !== 'StringLiteral') {
-        let value = attrPath.node.value
+      if (node.name.name === 'ref' && node.value.type !== 'StringLiteral') {
+        let value = node.value
         let code = fileContent.slice(value.expression.start, value.expression.end)
         let refValue = 'vueref' + refIndex++
         attrPath.traverse({
@@ -169,8 +170,17 @@ function parseRender (path, fileContent, result) {
         result.lifeCycles.mounted = mountCode + (result.lifeCycles.mounted ? result.lifeCycles.mounted : '')
         result.lifeCycles.updated = mountCode + (result.lifeCycles.updated ? result.lifeCycles.updated : '')
         // result.lifeCycles.destroyed = unmountCode + (result.lifeCycles.destroyed ? result.lifeCycles.destroyed : '')
-      } else if (attrPath.node.name.name === 'className') {
-        attrPath.node.name.name = 'class'
+      } else if (node.name.name === 'className') {
+        node.name.name = 'class'
+      } else if (node.name.name === 'dangerouslySetInnerHTML') {
+        // replace dangerouslySetInnerHTML with domPropsInnerHTML
+        node.name.name = 'domPropsInnerHTML'
+        let expression = attrPath.get('value.expression')
+        if (expression.isIdentifier()) {
+          expression.replaceWithSourceString(`${expression.node.name}.__html`)
+        } else {
+          expression.replaceWith(expression.get('properties.0.value'))
+        }
       }
     },
     MemberExpression (memPath) {
