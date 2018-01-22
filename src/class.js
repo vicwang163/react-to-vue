@@ -114,7 +114,9 @@ function parseConstructor (path, fileContent, result, root) {
   })
   // put this code into `created` lifecycle
   let code = getFunctionBody(path.node.body)
-  result.lifeCycles['created'] = code
+  if (code.trim()) {
+    result.lifeCycles['created'] = code
+  }
 }
 // parse life cycle methods
 function parseLifeCycle (path, method, fileContent, result) {

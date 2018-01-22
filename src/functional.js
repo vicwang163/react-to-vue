@@ -15,7 +15,9 @@ module.exports = function (path, fileContent, result) {
   let extraCode = ''
   let paramsPath = path.get('params.0')
   let originalPropName = ''
-  if (paramsPath.isObjectPattern()) {
+  if (!paramsPath) {
+    // it means there is no params
+  } else if (paramsPath.isObjectPattern()) {
     let node = paramsPath.node
     extraCode = `let ${fileContent.slice(node.start, node.end)} = c.props`
   } else if (paramsPath.isAssignmentPattern()) {
@@ -30,8 +32,10 @@ module.exports = function (path, fileContent, result) {
   }
   
   //add the extra code into blockstatement
-  let astFrag = transformSourceString(extraCode)
-  path.get('body.body.0').insertBefore(astFrag)
+  if (extraCode) {
+    let astFrag = transformSourceString(extraCode)
+    path.get('body.body.0').insertBefore(astFrag)
+  }
   
   // retrieve sub component
   path.traverse({
