@@ -169,6 +169,8 @@ function parseRender (path, fileContent, result) {
         result.lifeCycles.mounted = mountCode + (result.lifeCycles.mounted ? result.lifeCycles.mounted : '')
         result.lifeCycles.updated = mountCode + (result.lifeCycles.updated ? result.lifeCycles.updated : '')
         // result.lifeCycles.destroyed = unmountCode + (result.lifeCycles.destroyed ? result.lifeCycles.destroyed : '')
+      } else if (attrPath.node.name.name === 'className') {
+        attrPath.node.name.name = 'class'
       }
     },
     MemberExpression (memPath) {

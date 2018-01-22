@@ -46,6 +46,11 @@ module.exports = function (path, fileContent, result) {
       if (memPath.node.property.name === 'children' && memPath.node.object.name === originalPropName) {
         memPath.node.object.name = 'c'
       }
+    },
+    JSXAttribute (attrPath) {
+      if (attrPath.node.name.name === 'className') {
+        attrPath.node.name.name = 'class'
+      }
     }
   })
   // get code
