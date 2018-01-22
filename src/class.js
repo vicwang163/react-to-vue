@@ -2,7 +2,7 @@ var generate = require('babel-generator').default
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 var babelTypes = require('babel-types')
-const {getFunctionBody, transformSourceString} = require('./utility')
+const {getFunctionBody, transformSourceString, transformComponentName} = require('./utility')
 // autumatically increate index 
 var refIndex = 0
 
@@ -152,6 +152,11 @@ function parseRender (path, fileContent, result) {
       // find sub component
       if (element.name && element.name.name && /^[A-Z]/.test(element.name.name)) {
         result.components.push(element.name.name)
+        let name = transformComponentName(element.name.name)
+        element.name.name = name
+        if (jsxPath.node.closingElement) {
+          jsxPath.node.closingElement.name.name = name
+        }
       }
     },
     JSXAttribute (attrPath) {

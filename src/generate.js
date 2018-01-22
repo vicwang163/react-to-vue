@@ -1,5 +1,6 @@
 var format = require("prettier-eslint");
 var babelTraverse = require('babel-traverse').default
+var {transformComponentName} = require('./utility')
 
 function mergeExportComponent (object) {
   let com = null;
@@ -46,7 +47,7 @@ module.exports = function generateVueComponent (object) {
     
     // add component name
     if (component.componentName) {
-      vueProps.push(`name: '${component.componentName.replace(/^[A-Z]/, v => v.toLowerCase()).replace(/[A-Z]/g, v => '-' + v.toLowerCase())}'`)
+      vueProps.push(`name: '${transformComponentName(component.componentName)}'`)
     }
     
     // add functional tag if it's a functional component
@@ -116,13 +117,6 @@ module.exports = function generateVueComponent (object) {
       // if exists necessary components
       if (result.length) {
         vueProps.push(`components: {${result.join(',')}}`)
-        // replace sub components according to Vue rules
-        result.forEach(function (value) {
-          let reg = new RegExp(`<${value}`, 'g')
-          component.render = component.render.replace(reg, function (r) {
-            return r.replace(/^<[A-Z]/, v => v.toLowerCase()).replace(/[A-Z]/g, v => '-' + v.toLowerCase())
-          })
-        })
       }
     }
     

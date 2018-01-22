@@ -1,4 +1,4 @@
-const {reportIssue, transformSourceString, getFunctionBody} = require('./utility')
+const {reportIssue, transformSourceString, getFunctionBody, transformComponentName} = require('./utility')
 const generate = require('babel-generator').default
 
 module.exports = function (path, fileContent, result) {
@@ -44,6 +44,18 @@ module.exports = function (path, fileContent, result) {
       // find sub component
       if (element.name && element.name.name && /^[A-Z]/.test(element.name.name)) {
         funcCom.components.push(element.name.name)
+      }
+    },
+    JSXElement (jsxPath) {
+      let element = jsxPath.node.openingElement
+      // find sub component
+      if (element.name && element.name.name && /^[A-Z]/.test(element.name.name)) {
+        funcCom.components.push(element.name.name)
+        let name = transformComponentName(element.name.name)
+        element.name.name = name
+        if (jsxPath.node.closingElement) {
+          jsxPath.node.closingElement.name.name = name
+        }
       }
     },
     MemberExpression (memPath) {

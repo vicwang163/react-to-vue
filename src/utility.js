@@ -27,6 +27,16 @@ export function transformSourceString (statement) {
 }
 
 /*
+* transform component name
+*/
+export function transformComponentName (name) {
+  if (/[A-Z]{2,}/.test(name)) {
+    return name
+  }
+  return name.replace(/^[A-Z]/, v => v.toLowerCase()).replace(/[A-Z]/g, v => '-' + v.toLowerCase())
+}
+
+/*
 * generate BlockStatement
 */
 export function getFunctionBody (node) {
