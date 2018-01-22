@@ -50,8 +50,9 @@ module.exports = function transform (src, dst) {
           result.declaration.push(fileContent.slice(node.start, node.end))
         }
       }
-      if (classDefineCount === 0) {
-        result.class = null
+      // check props validation
+      if (!Object.keys(result.propTypes).length && /props/.test(fileContent)) {
+        result.caveats.push(`There is no props validation, please check it manually`)
       }
     },
     ImportDeclaration (path) {
