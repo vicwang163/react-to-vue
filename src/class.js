@@ -67,6 +67,20 @@ function replaceSpecialStatement (path, fileContent) {
           memPath.replaceWith(babelTypes.thisExpression())
         }
       }
+    },
+    JSXAttribute (attrPath) {
+      let node = attrPath.node
+      if (node.name.name === 'className') {
+        node.name.name = 'class'
+      } else if (node.name.name === 'dangerouslySetInnerHTML') {
+        node.name.name = 'domPropsInnerHTML'
+        let expression = attrPath.get('value.expression')
+        if (expression.isIdentifier()) {
+          expression.replaceWithSourceString(`${expression.node.name}.__html`)
+        } else {
+          expression.replaceWith(expression.get('properties.0.value'))
+        }
+      }
     }
   });  
 }
