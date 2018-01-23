@@ -72,6 +72,14 @@ module.exports = function transform (src, dst) {
       }
       // retrieve functional component
       getFunctional(path, fileContent, result)
+    },
+    ArrowFunctionExpression (path) {
+      let variablePath = path.findParent((p) => p.isVariableDeclaration())
+      if (!variablePath || variablePath.parentPath.type !== 'Program' || path.getPathLocation().split('.').length > 4) {
+        return
+      }
+      // retrieve functional component
+      getFunctional(path, fileContent, result, 'arrow')
     }
   })
   // generate vue component according to object

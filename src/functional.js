@@ -1,11 +1,11 @@
 const {reportIssue, transformSourceString, getFunctionBody, transformComponentName} = require('./utility')
 const generate = require('babel-generator').default
 
-module.exports = function (path, fileContent, result) {
+module.exports = function (path, fileContent, result, funcType = null) {
   let funcCom = {
     components: [],
     functional: true,
-    componentName: path.node.id.name
+    componentName: funcType === 'arrow' ? path.parentPath.node.id.name : path.node.id.name
   }
   if (funcCom.componentName !== result.exportName) {
     //if it's a common function
