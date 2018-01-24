@@ -42,15 +42,27 @@ module.exports = function (node, root) {
           root.caveats.push(`Inconsistent propTypes: '${className}:${property.key.name}'`)
         }
       }
-    } else if (node.left.property.name === 'defaultValue') {
+    } else if (node.left.property.name === 'defaultProps') {
       // component name
       let className = node.left.object.name
+      let propTypeObj
+      if (!root['propTypes'][className]) {
+        propTypeObj = root['propTypes'][className] = {}
+      } else {
+        propTypeObj = root['propTypes'][className]
+      }
       result = root['defaultValue'][className] = {}
       // properties loop
       let properties = node.right.properties
       for (let i = 0; i < properties.length; i++) {
         let property = properties[i]
-        result[property.key.name] = property.value.value || null
+        result[property.key.name] = property.value.value || root.source.slice(property.value.start, property.value.end)
+        // check if propTypes exist
+        if (!propTypeObj[property.key.name]) {
+          property.value.type.replace(/^[A-Z][a-z]+/, function (value) {
+            propTypeObj[property.key.name] = {type: value}
+          })
+        }
       }
     }
   }

@@ -70,7 +70,7 @@ module.exports = function generateVueComponent (object) {
           if (key === 'type') {
             arr.push(`${key}: ${value[key]}`)
           } else {
-            arr.push(`${key}: ${ typeof value[key] === 'string' ? `'${value[key]}'` : value[key] }`)
+            arr.push(`${key}: ${ value.type === 'String' ? `'${value[key]}'` : value[key] }`)
           }
         }
         propArr.push(`${item}: {${arr.join(',\n')}}`)

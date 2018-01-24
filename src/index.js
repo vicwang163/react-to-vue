@@ -27,7 +27,8 @@ module.exports = function transform (src, dst) {
     "propTypes": {},
     "defaultValue": {},
     // there exists incompatibility
-    "caveats": []
+    "caveats": [],
+    "source": fileContent
   }
   babelTraverse(ast, {
     Program (path) {
