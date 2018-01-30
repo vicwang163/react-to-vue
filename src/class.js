@@ -178,18 +178,31 @@ function parseRender (path, fileContent, result) {
       // if value of ref property is callback, we need to change it
       if (node.name.name === 'ref' && node.value.type !== 'StringLiteral') {
         let value = node.value
-        let code = fileContent.slice(value.expression.start, value.expression.end)
+        let code
+        // automatically increase the value
         let refValue = 'vueref' + refIndex++
-        attrPath.traverse({
-          JSXExpressionContainer (cPath) {
-            cPath.replaceWith(babelTypes.stringLiteral(refValue))
-          }
-        })
+        let bodys = null
+        // only has one statement
+        if ((bodys = attrPath.get('value.expression.body'), bodys) && bodys.isAssignmentExpression()) {
+          code = fileContent.slice(bodys.node.left.start, bodys.node.left.end)
+          code = `${code} = this.$refs.${refValue}`
+        } else if ((bodys = attrPath.get('value.expression.body.body'), bodys) && bodys.length === 1) { // only has one statement
+          // only has one statement in the blockstatement
+          bodys = bodys[0].get('expression.left')
+          code = fileContent.slice(bodys.node.start, bodys.node.end)
+          code = `${code} = this.$refs.${refValue}`
+        } else {
+          code = fileContent.slice(value.expression.start, value.expression.end)
+          code = `(${code})(this.$refs.${refValue})`
+        }
+        
+        let jsxContainer = attrPath.get('value')
+        if (jsxContainer) {
+          jsxContainer.replaceWith(babelTypes.stringLiteral(refValue))
+        }
         // add the ref callback code into specified lifecycle
-        let mountCode = `(${code})(this.$refs.${refValue})`
-        // let unmountCode = `(${code})(null)`
-        result.lifeCycles.mounted = mountCode + (result.lifeCycles.mounted ? result.lifeCycles.mounted : '')
-        result.lifeCycles.updated = mountCode + (result.lifeCycles.updated ? result.lifeCycles.updated : '')
+        result.lifeCycles.mounted = code + (result.lifeCycles.mounted ? result.lifeCycles.mounted : '')
+        result.lifeCycles.updated = code + (result.lifeCycles.updated ? result.lifeCycles.updated : '')
         // result.lifeCycles.destroyed = unmountCode + (result.lifeCycles.destroyed ? result.lifeCycles.destroyed : '')
       } else if (node.name.name === 'className') {
         node.name.name = 'class'
