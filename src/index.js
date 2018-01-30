@@ -25,7 +25,7 @@ module.exports = function transform (src, dst) {
     "class": {},
     "functional": [],
     "propTypes": {},
-    "defaultValue": {},
+    "defaultProps": {},
     // there exists incompatibility
     "caveats": [],
     "source": fileContent
@@ -38,7 +38,11 @@ module.exports = function transform (src, dst) {
         let node = nodeLists[i]
         // get prop-types
         if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
-          getProps(node.expression, result)
+          let leftNode = node.expression.left
+          if (leftNode.type === 'MemberExpression' && ["defaultProps", "propTypes"].includes(leftNode.property.name)) {
+            let className = node.expression.left.object.name
+            getProps(className, leftNode.property.name, node.expression.right, result)
+          }
         } else if (node.type === 'ClassDeclaration') {
           classDefineCount ++
           if (classDefineCount > 1) {
@@ -50,10 +54,6 @@ module.exports = function transform (src, dst) {
         } else if (node.type === 'VariableDeclaration') {
           result.declaration.push(fileContent.slice(node.start, node.end))
         }
-      }
-      // check props validation
-      if (!Object.keys(result.propTypes).length && /props/.test(fileContent)) {
-        result.caveats.push(`There is no props validation, please check it manually`)
       }
     },
     ImportDeclaration (path) {
@@ -83,6 +83,10 @@ module.exports = function transform (src, dst) {
       getFunctional(path, fileContent, result, 'arrow')
     }
   })
+  // check props validation
+  if (!Object.keys(result.propTypes).length && /props/.test(fileContent)) {
+    result.caveats.push(`There is no props validation, please check it manually`)
+  }
   // generate vue component according to object
   let output = generateVueComponent(result)
   

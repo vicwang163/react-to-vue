@@ -2,6 +2,7 @@ var generate = require('babel-generator').default
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 var babelTypes = require('babel-types')
+var getProps = require('./props')
 const {getFunctionBody, transformSourceString, transformComponentName} = require('./utility')
 // autumatically increate index 
 var refIndex = 0
@@ -195,6 +196,7 @@ function parseRender (path, fileContent, result) {
           code = fileContent.slice(value.expression.start, value.expression.end)
           code = `(${code})(this.$refs.${refValue})`
         }
+        code += ';'
         
         let jsxContainer = attrPath.get('value')
         if (jsxContainer) {
@@ -279,6 +281,12 @@ module.exports = function getClass (path, fileContent, root) {
         default:
           parseMethods(path, fileContent, result);
           break;
+      }
+    },
+    ClassProperty (path) {
+      let node = path.node
+      if (node.key && ['defaultProps', 'propTypes'].includes(node.key.name)) {
+        getProps(result.componentName, node.key.name, node.value, root)
       }
     }
   })

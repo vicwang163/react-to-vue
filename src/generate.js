@@ -58,7 +58,7 @@ module.exports = function generateVueComponent (object) {
     // add props
     if (object.propTypes && object.propTypes[component.componentName]) {
       let props = object.propTypes[component.componentName]
-      let defaultValues = object.defaultValue && object.defaultValue[component.componentName]
+      let defaultValues = object.defaultProps && object.defaultProps[component.componentName]
       let propArr = []
       for (let item in props) {
         let value = props[item]
