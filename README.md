@@ -1,6 +1,9 @@
 # react-to-vue
 transform a basic react component to vue component
 
+## Install
+npm install react-to-vue -g
+
 ## Usage
 
 ``` sh
