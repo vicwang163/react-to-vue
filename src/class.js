@@ -287,6 +287,8 @@ module.exports = function getClass (path, fileContent, root) {
       let node = path.node
       if (node.key && ['defaultProps', 'propTypes'].includes(node.key.name)) {
         getProps(result.componentName, node.key.name, node.value, root)
+      } else {
+        debugger
       }
     }
   })

@@ -8,16 +8,20 @@ var getFunctional = require('./functional')
 var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 var chalk = require('chalk')
+var transformTS = require('./ts')
 
-module.exports = function transform (src, dst) {
+module.exports = function transform (src, options) {
   // read file
   let fileContent = fs.readFileSync(src)
   fileContent = fileContent.toString()
   // parse module
   let ast = babylon.parse(fileContent, {
     sourceType:'module',
-    plugins: '*'
+    plugins: ["typescript", "classProperties", "jsx", "trailingFunctionCommas", "asyncFunctions", "exponentiationOperator", "asyncGenerators", "objectRestSpread"]
   })
+  if (options.ts) {
+    transformTS(ast)
+  }
   // traverse module
   let result = {
     "import": [],
@@ -91,7 +95,7 @@ module.exports = function transform (src, dst) {
   let output = generateVueComponent(result)
   
   // save file
-  saveComponent(dst, output)
+  saveComponent(options.output, output)
   
   // output caveats
   if (result.caveats.length) {

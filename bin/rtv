@@ -2,6 +2,8 @@
 'use strict'
 var transform = require('../lib/index.js')
 var path = require('path')
+var fs = require('fs')
+var chalk = require('chalk')
 
 process.env.NODE_PATH = __dirname + '/../node_modules'
 // 引入commander
@@ -17,7 +19,8 @@ program.usage('[options] file(react component)')
 // options
 // ----------------------------------------
 program
-  .option('-O --output [string]', 'The output file name')
+  .option('-o --output [string]', 'the output file name')
+  .option('-t --ts', 'it is a typescript component')
   .parse(process.argv)
 
 
@@ -26,5 +29,21 @@ if(!program.args.length){
 } else {
   let filepath = program.args[0]
   filepath = path.resolve(process.cwd(), filepath)
-  transform(filepath, program.output)
+  // check exists
+  if (!fs.existsSync(filepath)) {
+    console.log(chalk.red('file does not exist: ' + filepath))
+    process.exit(0)
+  }
+  // load options
+  let options = {}
+  let arr = ['output', 'ts']
+  arr.forEach((item) => {
+    program[item] !== undefined && (options[item] = program[item])
+  })
+  // load default option
+  if (/.tsx?$/.test(filepath) && options.ts === undefined) {
+    options.ts = true
+  }
+  // transform
+  transform(filepath, options)
 }
