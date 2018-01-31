@@ -7,12 +7,14 @@ npm install react-to-vue -g
 ## Usage
 
 ``` sh
-Usage: rtv [options] file(react component)  
+Usage: rtv [options] file(react component)
 
-Options:  
 
-  -V, --version         output the version number  
-  -O --output [string]  The output file name  
-  -h, --help            output usage information  
+Options:
+
+  -V, --version         output the version number
+  -o --output [string]  the output file name
+  -t --ts               it is a typescript component
+  -h, --help            output usage information
 
 ```
