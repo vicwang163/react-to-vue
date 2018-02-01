@@ -51,7 +51,7 @@ module.exports = function (className, category, node, root) {
     let properties = node.properties
     for (let i = 0; i < properties.length; i++) {
       let property = properties[i]
-      result[property.key.name] = property.value.value || root.source.slice(property.value.start, property.value.end)
+      result[property.key.name] = property.value.value !== undefined ? property.value.value : root.source.slice(property.value.start, property.value.end)
       // check if propTypes exist
       if (!propTypeObj[property.key.name]) {
         property.value.type.replace(/^[A-Z][a-z]+/, function (value) {

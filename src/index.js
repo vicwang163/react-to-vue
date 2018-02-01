@@ -9,11 +9,14 @@ var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 var chalk = require('chalk')
 var transformTS = require('./ts')
+var {reportIssue, removeBadCode} = require('./utility')
 
 module.exports = function transform (src, options) {
   // read file
   let fileContent = fs.readFileSync(src)
   fileContent = fileContent.toString()
+  // hard code
+  fileContent = removeBadCode(fileContent)
   // parse module
   let ast = babylon.parse(fileContent, {
     sourceType:'module',
@@ -69,6 +72,9 @@ module.exports = function transform (src, options) {
       result.import.push(fileContent.slice(node.start, node.end))
     },
     ClassDeclaration (path) {
+      if (path.parentPath.type !== 'Program' && path.parentPath.type !== 'ExportDefaultDeclaration') {
+        reportIssue('This component seems like HOC or something else, we may not support it')
+      }
       getClass(path, fileContent, result)
     },
     FunctionDeclaration (path) {

@@ -223,7 +223,7 @@ function parseRender (path, fileContent, result) {
       // change `this.state` and `this.props` to `this`
       let node = memPath.node
       // replace this.props.children with 'this.$slots.default'
-      if (node.property.name === 'children' && node.object.object.type === 'ThisExpression') {
+      if (node.property.name === 'children' && node.object.object && node.object.object.type === 'ThisExpression') {
         node.property.name = 'default'
         node.object.property.name = '$slots'
       }

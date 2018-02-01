@@ -56,3 +56,10 @@ export function getFunctionBody (node) {
   rt = rt.code.replace(/^{|}$/g, '')
   return rt
 }
+
+/*
+* remove bad code with hard code for now
+*/
+export function removeBadCode (con) {
+  return con.replace(/\.\.\.(\w+),\n/, function (a, v) {return '...' + v + '\n'})
+}
