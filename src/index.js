@@ -9,7 +9,7 @@ var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 var chalk = require('chalk')
 var transformTS = require('./ts')
-var {reportIssue, removeBadCode} = require('./utility')
+var {reportIssue, removeBadCode, isVariableFunc} = require('./utility')
 
 module.exports = function transform (src, options) {
   // read file
@@ -43,22 +43,24 @@ module.exports = function transform (src, options) {
       let classDefineCount = 0
       for (let i = 0; i < nodeLists.length; i++) {
         let node = nodeLists[i]
+        let cPath = path.get(`body.${i}`)
         // get prop-types
-        if (node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression') {
+        if (cPath.isExpressionStatement() && node.expression.type === 'AssignmentExpression') {
           let leftNode = node.expression.left
           if (leftNode.type === 'MemberExpression' && ["defaultProps", "propTypes"].includes(leftNode.property.name)) {
             let className = node.expression.left.object.name
             getProps(className, leftNode.property.name, node.expression.right, result)
           }
-        } else if (node.type === 'ClassDeclaration') {
+        } else if (cPath.isClassDeclaration()) {
           classDefineCount ++
           if (classDefineCount > 1) {
             console.error('One file should have only one class declaration!')
             process.exit()
           }
-        } else if (node.type === 'ExportDefaultDeclaration') {
+        } else if (cPath.isExportDefaultDeclaration()) {
           result.exportName = node.declaration.name ? node.declaration.name : node.declaration.id.name
-        } else if (node.type === 'VariableDeclaration') {
+        } else if (cPath.isVariableDeclaration() && !isVariableFunc(cPath)) {
+          // it's just simple variable declaration, e.g. `let a = 1`
           result.declaration.push(fileContent.slice(node.start, node.end))
         }
       }

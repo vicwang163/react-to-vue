@@ -63,3 +63,18 @@ export function getFunctionBody (node) {
 export function removeBadCode (con) {
   return con.replace(/\.\.\.(\w+),\n/, function (a, v) {return '...' + v + '\n'})
 }
+
+/*
+* check if the VariableDeclaration is function, like 'let a = function () {}'
+*/
+
+export function isVariableFunc (path) {
+  let result = false
+  path.traverse({
+    "ArrowFunctionExpression|FunctionDeclaration" (p) {
+      result = true
+      p.stop()
+    }
+  })
+  return result
+}
