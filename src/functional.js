@@ -7,11 +7,6 @@ module.exports = function (path, fileContent, result, funcType = null) {
     functional: true,
     componentName: funcType === 'arrow' ? path.parentPath.node.id.name : path.node.id.name
   }
-  if (funcCom.componentName !== result.exportName) {
-    //if it's a common function
-    result.functional.push(fileContent.slice(path.node.start, path.node.end))
-    return
-  }
   let extraCode = ''
   let paramsPath = path.get('params.0')
   let originalPropName = ''
@@ -29,12 +24,6 @@ module.exports = function (path, fileContent, result, funcType = null) {
     extraCode = `const ${originalPropName} = c.props`
   } else {
     reportIssue(`Unknow params for '${funcCom.componentName}'`)
-  }
-  
-  //add the extra code into blockstatement
-  if (extraCode) {
-    let astFrag = transformSourceString(extraCode)
-    path.get('body.body.0').insertBefore(astFrag)
   }
   
   // retrieve sub component
@@ -71,6 +60,19 @@ module.exports = function (path, fileContent, result, funcType = null) {
       }
     }
   })
+  
+  if (funcCom.componentName !== result.exportName) {
+    // get code
+    let code = getFunctionBody(path, false)
+    //if it's a common function
+    result.functional.push(code)
+    return
+  } else if (extraCode) {
+    //add the extra code into blockstatement
+    let astFrag = transformSourceString(extraCode)
+    path.get('body.body.0').insertBefore(astFrag)
+  }
+  
   // get code
   let code = getFunctionBody(path.get('body'))
   funcCom.render = `render (h, c) {${code}}`

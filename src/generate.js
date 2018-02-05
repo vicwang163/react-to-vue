@@ -140,7 +140,8 @@ module.exports = function generateVueComponent (object) {
         "max-len": ["error", { "code": 150 }],
         "object-curly-spacing": ["error", "never"],
         "space-before-function-paren": ["error", "always"],
-        "no-multiple-empty-lines": ["error", { "max": 0}]
+        "no-multiple-empty-lines": ["error", { "max": 0}],
+        "line-comment-position": ["error", { "position": "beside" }]
       }
     }
   };

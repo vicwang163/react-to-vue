@@ -39,7 +39,7 @@ export function transformComponentName (name) {
 /*
 * generate BlockStatement
 */
-export function getFunctionBody (node) {
+export function getFunctionBody (node, removeBrace = true) {
   let tempAst = babylon.parse('{console.log(1)}')
   let executed = false
   let rt
@@ -53,7 +53,8 @@ export function getFunctionBody (node) {
     }
   })
   rt = generate(tempAst, {})
-  rt = rt.code.replace(/^{|}$/g, '')
+  rt = rt.code
+  removeBrace && (rt = rt.replace(/^{|}$/g, ''))
   return rt
 }
 
