@@ -25,6 +25,16 @@ module.exports = function transform (src, options) {
   if (options.ts) {
     transformTS(ast)
   }
+  // fix trailingComments issues with hard code 
+  babelTraverse(ast, {
+    BlockStatement (path) {
+      path.node.body.forEach((item) => {
+        if (item.trailingComments && fileContent.charCodeAt([item.end]) === 10) {
+          delete item.trailingComments
+        }
+      })
+    }
+  })
   // traverse module
   let result = {
     "import": [],
