@@ -20,7 +20,7 @@ module.exports = function transform (src, options) {
   // parse module
   let ast = babylon.parse(fileContent, {
     sourceType:'module',
-    plugins: ["typescript", "classProperties", "jsx", "trailingFunctionCommas", "asyncFunctions", "exponentiationOperator", "asyncGenerators", "objectRestSpread"]
+    plugins: ["typescript", "classProperties", "jsx", "trailingFunctionCommas", "asyncFunctions", "exponentiationOperator", "asyncGenerators", "objectRestSpread", "decorators"]
   })
   if (options.ts) {
     transformTS(ast)
@@ -86,6 +86,9 @@ module.exports = function transform (src, options) {
     ClassDeclaration (path) {
       if (path.parentPath.type !== 'Program' && path.parentPath.type !== 'ExportDefaultDeclaration') {
         reportIssue('This component seems like HOC or something else, we may not support it')
+      }
+      if (path.node.decorators) {
+        result.caveats.push('react-to-vue does not support decorator for now')
       }
       getClass(path, fileContent, result)
     },
