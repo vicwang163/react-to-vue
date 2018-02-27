@@ -1,6 +1,6 @@
 {
   "name": "react-to-vue",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "engine that transforms React component to Vue component",
   "scripts": {
     "prepublish": "npm run start",
