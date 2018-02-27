@@ -69,6 +69,8 @@ module.exports = function generateVueComponent (object) {
         for (let key in value) {
           if (key === 'type') {
             arr.push(`${key}: ${value[key]}`)
+          } else if (key === 'required') {
+            arr.push(`${key}: ${value[key]}`)
           } else {
             arr.push(`${key}: ${ value.type === 'String' ? `'${value[key]}'` : value[key] }`)
           }
