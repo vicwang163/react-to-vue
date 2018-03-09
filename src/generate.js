@@ -41,8 +41,15 @@ module.exports = function generateVueComponent (object) {
   
   // generate export component
   if (component && component.render) {
+    // add class static variables and methods if exists
+    if (component.static) {
+      for (let name in component.static) {
+        content += `const static_${name} = ${component.static[name]}\n`
+      }
+    }
     // vueProps is designed to put vue properties
     let vueProps = []
+    content += '// export component\n'
     content += 'export default {\n'
     
     // add component name

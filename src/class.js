@@ -238,8 +238,24 @@ function parseRender (path, fileContent, result) {
   result.render = `render () {${code}}`
 }
 
+/*
+* replace static variables and methods
+*/
+function replaceStatic (path, root) {
+  path.traverse({
+    MemberExpression (memPath) {
+      let propertyName = memPath.node.property.name
+      let memExpression = root.source.slice(memPath.node.object.start, memPath.node.object.end)
+      if (root.class.static[propertyName] && ['this.constructor', root.class.componentName].includes(memExpression)) {
+        memPath.replaceWithSourceString(`static_${propertyName}`)
+      }
+    }
+  })
+}
+
 module.exports = function getClass (path, fileContent, root) {
   Object.assign(root.class, {
+    static: {},
     data: {},
     methods: [],
     lifeCycles: {},
@@ -250,6 +266,9 @@ module.exports = function getClass (path, fileContent, root) {
   
   path.traverse({
     ClassMethod (path) {
+      // replace statics
+      replaceStatic(path, root)
+      // deal with different method
       switch(path.node.key.name) {
         case 'constructor':
           parseConstructor(path, fileContent, result, root);
@@ -287,8 +306,8 @@ module.exports = function getClass (path, fileContent, root) {
       let node = path.node
       if (node.key && ['defaultProps', 'propTypes'].includes(node.key.name)) {
         getProps(result.componentName, node.key.name, node.value, root)
-      } else {
-        debugger
+      } else if (node.static) {
+        result.static[node.key.name] = root.source.slice(node.value.start, node.value.end)
       }
     }
   })
