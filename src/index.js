@@ -78,7 +78,7 @@ module.exports = function transform (src, options) {
     ImportDeclaration (path) {
       let node = path.node
       // skip react and prop-types modules
-      if (["react", "prop-types"].includes(node.source.value)) {
+      if (["react", "prop-types", "react-dom"].includes(node.source.value)) {
         return
       }
       result.import.push(fileContent.slice(node.start, node.end))
