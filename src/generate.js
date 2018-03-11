@@ -44,7 +44,11 @@ module.exports = function generateVueComponent (object) {
     // add class static variables and methods if exists
     if (component.static) {
       for (let name in component.static) {
-        content += `let static_${name} = ${component.static[name]}\n`
+        if (component.static[name]) {
+          content += `let static_${name} = ${component.static[name]}\n`
+        } else {
+          content += `let static_${name}\n`
+        }
       }
     }
     // vueProps is designed to put vue properties

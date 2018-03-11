@@ -307,7 +307,11 @@ module.exports = function getClass (path, fileContent, root) {
       if (node.key && ['defaultProps', 'propTypes'].includes(node.key.name)) {
         getProps(result.componentName, node.key.name, node.value, root)
       } else if (node.static) {
-        result.static[node.key.name] = root.source.slice(node.value.start, node.value.end)
+        if (node.value) {
+          result.static[node.key.name] = root.source.slice(node.value.start, node.value.end)
+        } else {
+          result.static[node.key.name] = null
+        }
       }
     }
   })
