@@ -15,6 +15,7 @@ Options:
   -V, --version         output the version number
   -o --output [string]  the output file name
   -t --ts               it is a typescript component
+  -f --flow             it is a component with Flow type annotations
   -h, --help            output usage information
 
 ```
