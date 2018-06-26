@@ -1,6 +1,6 @@
 {
   "name": "react-to-vue",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "engine that transforms React component to Vue component",
   "scripts": {
     "prepublish": "npm run start",
@@ -37,6 +37,7 @@
     "babylon": "^7.0.0-beta.3",
     "chalk": "^2.3.0",
     "commander": "^2.13.0",
+    "flow-remove-types": "^1.2.3",
     "prettier-eslint": "^8.7.0"
   }
 }

@@ -21,6 +21,7 @@ program.usage('[options] file(react component)')
 program
   .option('-o --output [string]', 'the output file name')
   .option('-t --ts', 'it is a typescript component')
+  .option('-f --flow', 'it is a component with Flow type annotations')
   .parse(process.argv)
 
 
@@ -36,7 +37,7 @@ if(!program.args.length){
   }
   // load options
   let options = {}
-  let arr = ['output', 'ts']
+  let arr = ['output', 'ts', 'flow']
   arr.forEach((item) => {
     program[item] !== undefined && (options[item] = program[item])
   })

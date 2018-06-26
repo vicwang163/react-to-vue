@@ -9,6 +9,7 @@ var babelTraverse = require('babel-traverse').default
 var babylon = require('babylon')
 var chalk = require('chalk')
 var transformTS = require('./ts')
+var flowRemoveTypes = require('flow-remove-types');
 var {reportIssue, removeBadCode, isVariableFunc} = require('./utility')
 
 module.exports = function transform (src, options) {
@@ -17,6 +18,10 @@ module.exports = function transform (src, options) {
   fileContent = fileContent.toString()
   // hard code
   fileContent = removeBadCode(fileContent)
+  // if it is used with Flow type annotations
+  if (options.flow) {
+    fileContent = flowRemoveTypes(fileContent).toString()
+  }
   // parse module
   let ast = babylon.parse(fileContent, {
     sourceType:'module',

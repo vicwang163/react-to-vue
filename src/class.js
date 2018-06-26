@@ -187,7 +187,7 @@ function parseRender (path, fileContent, result) {
         if ((bodys = attrPath.get('value.expression.body'), bodys) && bodys.isAssignmentExpression()) {
           code = fileContent.slice(bodys.node.left.start, bodys.node.left.end)
           code = `${code} = this.$refs.${refValue}`
-        } else if ((bodys = attrPath.get('value.expression.body.body'), bodys) && bodys.length === 1) { // only has one statement
+        } else if (bodys.node && (bodys = attrPath.get('value.expression.body.body'), bodys) && bodys.length === 1) { // only has one statement
           // only has one statement in the blockstatement
           bodys = bodys[0].get('expression.left')
           code = fileContent.slice(bodys.node.start, bodys.node.end)
